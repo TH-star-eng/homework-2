@@ -1,0 +1,87 @@
+#include <stdio.h>
+
+#define MAX_CANDIDATES 3
+#define MAX_VOTERS 9
+
+typedef struct {
+    char name[50];
+    int votes;
+} Candidate;
+
+void pluralityVoting(Candidate candidates[], int numCandidates, int numVoters) {
+    int maxVotes = 0;
+    char winner[6];
+
+    for (int i = 0; i < numCandidates; i++) {
+        if (candidates[i].votes > maxVotes) {
+            maxVotes = candidates[i].votes;
+            strcpy(winner, candidates[i].name);
+        }
+    }
+
+    printf("Plurality Voting Winner: %s\n", winner);
+}
+
+void rankedChoiceVoting(Candidate candidates[], int numCandidates, int numVoters, int preferences[MAX_VOTERS][MAX_CANDIDATES]) {
+    int majority = numVoters / 2 + 1;
+    int eliminated[MAX_CANDIDATES] = {0};
+
+    while (1) {
+        int votes[MAX_CANDIDATES] = {0};
+
+        for (int i = 0; i < numVoters; i++) {
+            for (int j = 0; j < numCandidates; j++) {
+                if (!eliminated[preferences[i][j]]) {
+                    votes[preferences[i][j]]++;
+                    break;
+                }
+            }
+        }
+
+        int maxVotes = 0, minVotes = numVoters, winner = -1, loser = -1;
+
+        for (int i = 0; i < numCandidates; i++) {
+            if (!eliminated[i]) {
+                if (votes[i] > maxVotes) {
+                    maxVotes = votes[i];
+                    winner = i;
+                }
+                if (votes[i] < minVotes) {
+                    minVotes = votes[i];
+                    loser = i;
+                }
+            }
+        }
+
+        if (maxVotes >= majority) {
+            printf("Ranked-Choice Voting Winner: %s\n", candidates[winner].name);
+            return;
+        }
+
+        eliminated[loser] = 1;
+    }
+}
+
+int main() {
+    Candidate candidates[MAX_CANDIDATES] = {{"Alice", 0}, {"Bob", 0}, {"Charlie", 0}};
+    int numCandidates = 3;
+    int numVoters = 5;
+    int preferences[MAX_VOTERS][MAX_CANDIDATES] = {
+        {0, 1, 2},
+        {1, 0, 2},
+        {2, 0, 1},
+        {0, 2, 1},
+        {1, 2, 0}
+    };
+
+    // Simulate plurality voting
+    candidates[0].votes = 2;
+    candidates[1].votes = 2;
+    candidates[2].votes = 1;
+    pluralityVoting(candidates, numCandidates, numVoters);
+
+    // Simulate ranked-choice voting
+    rankedChoiceVoting(candidates, numCandidates, numVoters, preferences);
+
+    return 0;
+}
